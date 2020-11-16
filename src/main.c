@@ -2,20 +2,20 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "myLib.h"
 #include "game.h"
 #include "text.h"
 
 #include "introScreen.h"
 #include "background.h"
 #include "endScreen.h"
+#include "mylib.h"
 
 enum GBAState state = START;
 int score = 0;
 char scorePrint[25];
 
 
-int main() {
+int main(void) {
 
 	REG_DISPCNT = MODE_3 | BG2_EN;
 

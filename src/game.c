@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "game.h"
-#include "myLib.h"
 #include "text.h"
 
 
@@ -14,6 +13,7 @@
 #include "jumpLeft.h"
 #include "introScreen.h"
 #include "background.h"
+#include "mylib.h"
 #include "platform.h"
 
 //Scaled screen variables
@@ -55,7 +55,7 @@ Platform allPlatforms[NUM_PLATFORMS];
 int platformSpeed;
 
 //Score counter
-int score;
+extern int score;
 char scoreChar[25];
 //Timer for score, score increases faster as platforms move faster
 int scoreIncrease;

@@ -1,3 +1,9 @@
+#ifndef MY_LIB_H
+#define MY_LIB_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
 typedef unsigned short u16;
 
 #define REG_DISPCNT *(unsigned short *) 0x4000000
@@ -111,10 +117,6 @@ typedef struct
 #define DMA_IRQ (1 << 30)
 #define DMA_ON (1 << 31)
 
-typedef int bool;
-#define true 1
-#define false 0
-
 //Platform struct
 typedef struct {
 	int x;
@@ -136,9 +138,11 @@ void drawImage(int x, int y, int width, int height, const unsigned short *image)
 void drawImageTrans(int x, int y, int width, int height, const unsigned short *image);
 void redrawBackground(int x, int y, int width, int height, const unsigned short *image);
 void drawRect(int x, int y, int width, int height, unsigned short color);
-void waitForVBlank();
+void waitForVBlank(void);
 void fillScreen(volatile u16 color);
 
 //Main file prototypes
-void resetStart();
+void resetStart(void);
 void endGame(int finalScore);
+
+#endif

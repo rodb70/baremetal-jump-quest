@@ -1,5 +1,5 @@
-#include "myLib.h"
 #include "text.h"
+#include "mylib.h"
 
 void drawString(int x, int y, char *str, u16 color) {
 	while(*str) {
