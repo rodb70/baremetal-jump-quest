@@ -65,7 +65,7 @@ volatile uint32_t* frame_buffer_init(void)
 
     SDL_SetTextureBlendMode( m->texture, SDL_BLENDMODE_BLEND );
 
-    videoBuffer = &m->tft_fb[0][0];
+    videoBuffer = &m->tft_fb[ 0 ][ 0 ];
 
     return (void*) m->tft_fb;
 }
@@ -88,7 +88,15 @@ int frame_buffer_switch(int offset)
     return 0;
 }
 
-void drawRect(int row, int col, int height, int width, unsigned short color)
+void setPixel(int row, int col, uint16_t color)
+{
+    if( col > 0 && col < SCREEN_HEIGHT && row > 0 && row < SCREEN_WIDTH )
+    {
+        m->tft_fb[ col ][ row ] = color;
+    }
+}
+
+void drawRect(int row, int col, int height, int width, uint16_t color)
 {
     int endw = row + width;
     int endh = col + height;
@@ -105,43 +113,87 @@ void drawRect(int row, int col, int height, int width, unsigned short color)
     {
         for( int w = row; w < endw; w++ )
         {
-            m->tft_fb[ h ][ w ] = color;
+            setPixel( w, h, color );
         }
     }
 }
 
-void background_color(int height, int width, unsigned short color)
+void background_color(int height, int width, uint16_t color)
 {
     for( int h = 0; h < height; h++ )
     {
         for( int w = 0; w < width; w++ )
         {
-            m->tft_fb[ h ][ w ] = color;
+            setPixel( w, h, color );
         }
     }
 }
 
-void drawFullscreenImage(const unsigned short *image)
+void drawFullscreenImage(const uint16_t *image)
 {
     memcpy( m->tft_fb, image, sizeof( m->tft_fb ));
 }
 
-void fillinScreen(volatile unsigned short color)
+void fillinScreen(uint16_t color)
 {
     background_color( SCREEN_HEIGHT, SCREEN_WIDTH, color );
 }
 
-void drawImage3(int row, int col, int width, int height, const unsigned short *image)
+void drawImage3(int row, int col, int width, int height, const uint16_t *image)
 {
     for( int c = 0; c < height; c++ )
     {
         for( int r = 0; r < width; r++ )
         {
-            m->tft_fb[ col + c ][ row + r ] = *image;
+            setPixel( row + r, col + c, *image );
             image++;
         }
     }
 }
+
+void drawImage(int x, int y, int width, int height, const uint16_t *image)
+{
+    for( int c = 0; c < height; c++ )
+    {
+        for( int r = 0; r < width; r++ )
+        {
+            setPixel( x + r, y + c, *( image + OFFSET( c, r, width )));
+        }
+    }
+}
+
+void drawAnimation( int x, int y, int width, int height, int animationCount, int numFrames,
+                    const uint16_t *image)
+{
+    for( int col = 0; col < height; col++ )
+    {
+        for( int row = 0; row < width; row++ )
+        {
+            uint16_t pixelColor = image[ OFFSET( col, (animationCount * width) + row, numFrames * width )];
+            if( pixelColor != MAGENTA )
+            {
+                setPixel( row + x, col + y, pixelColor );
+            }
+        }
+    }
+
+}
+
+void drawImageTrans(int x, int y, int width, int height, const uint16_t *image)
+{
+    for( int col = 0; col < height; col++ )
+    {
+        for( int row = 0; row < width; row++ )
+        {
+            uint16_t pixelColor = image[ OFFSET( col, row, width )];
+            if( pixelColor != MAGENTA )
+            {
+                setPixel( row + x, col + y, pixelColor );
+            }
+        }
+    }
+}
+
 void undrawImage3(int row, int col, int width, int height, const uint16_t *image)
 {
     for( int c = 0; c < height; ++c )
@@ -150,13 +202,12 @@ void undrawImage3(int row, int col, int width, int height, const uint16_t *image
         src += OFFSET( row, c + col, SCREEN_WIDTH );
         for( int r = 0; r < width; r++ )
         {
-            m->tft_fb[ col + c ][ row + r ] = *src;
+            setPixel( row + r, col + c, *src );
             src++;
         }
     }
 }
 
-bool print = false;
 /**
  * draw a partial image
  *
@@ -173,7 +224,7 @@ void drawImage3FromRow(int r, int c, int rowOffset, int width, int height, const
     {
         for( int row = rowOffset, pos = 0; row < width; ++row, ++pos )
         {
-            m->tft_fb[ c ][ r + pos ] = *( image + row );
+            setPixel( row + r, c, *( image + row ));
         }
         image += width;
     }
@@ -182,6 +233,23 @@ void drawImage3FromRow(int r, int c, int rowOffset, int width, int height, const
 void drawBackground(const uint16_t *image)
 {
     drawImage3( 0,0, SCREEN_WIDTH, SCREEN_HEIGHT, image );
+}
+
+void redrawBackground(int x, int y, int width, int height, const unsigned short *image)
+{
+    for( int col = 0; col < height; col++ )
+    {
+        for( int row = 0; row < width; row++ )
+        {
+            int _y = col + y;
+            int _x = row + x;
+
+            if( _y > 0 && _y < SCREEN_HEIGHT && _x > 0 && _x < SCREEN_WIDTH )
+            {
+                setPixel( _x, _y, *(image + OFFSET( _y, _x, SCREEN_WIDTH )));
+            }
+        }
+    }
 }
 
 void drawHorizontal(int row, int col, int width, unsigned int color)
@@ -193,7 +261,7 @@ void drawHorizontal(int row, int col, int width, unsigned int color)
     }
     for( int r = row; r < endw; r++ )
     {
-        m->tft_fb[ col ][ r ] = color;
+        setPixel( row + r, col, color );
     }
 }
 
@@ -214,7 +282,7 @@ void drawVertical(int row, int col, int height, int width, unsigned int color)
     {
         for( int r = row; r < endw; r++ )
         {
-            m->tft_fb[ c ][ r ] = color;
+            setPixel( r, c, color );
         }
     }
 }

@@ -51,7 +51,6 @@ CSRC += introScreen.c
 CSRC += jumpLeft.c
 CSRC += jumpRight.c
 CSRC += main.c
-CSRC += mylib.c
 CSRC += platform.c
 CSRC += text.c
 CSRC += walkLeft.c
